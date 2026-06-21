@@ -1,4 +1,4 @@
-# Codex Auth Profile
+# Codexchange
 
 [English](README.md)
 
