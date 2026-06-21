@@ -4,31 +4,49 @@
 
 🌐 Language: English | [中文](README.zh-CN.md)
 
-Tiny Windows helper for switching local Codex accounts without logging out of
-ChatGPT in your browser, and without running `codex logout` on your current
-Codex account.
+**Switch Codex accounts without logging out of ChatGPT.**
 
-It manages local Codex `auth.json` profiles:
+Codexchange is a tiny Windows PowerShell helper for saving, switching, and
+restoring local Codex auth profiles. It is useful when you use multiple
+Codex-capable accounts and do not want to repeatedly sign out of ChatGPT or run
+`codex logout` just to switch local Codex state.
+
+```powershell
+codex-auth-profile.cmd save personal
+codex-auth-profile.cmd login-as work
+codex-auth-profile.cmd use work
+```
+
+## Why this exists
+
+Codex CLI and the VS Code Codex extension use local authentication state. When
+multiple accounts are involved, repeatedly logging out and logging back in can
+leave stale local state and may lead to errors such as:
+
+```text
+Your access token could not be refreshed because you have since logged out or signed in to another account.
+Please sign in again.
+```
+
+Codexchange avoids that old workflow. To add another account, use `login-as`.
+It runs `codex login` inside an isolated `CODEX_HOME`, then saves the result as
+a named profile.
+
+It manages local Codex profile files here:
 
 ```text
 %USERPROFILE%\.codex\auth.json
 %USERPROFILE%\.codex\auth-profiles\<name>.auth.json
 ```
 
-## Why this exists
+## Features
 
-Codex CLI and the VS Code Codex extension use local auth state. If you have two
-valid Codex-capable accounts, switching them by repeatedly logging out can be
-annoying. Worse, `codex logout` may revoke the refresh token in the active
-`auth.json`, which can make a saved profile fail later with:
-
-```text
-Your access token could not be refreshed because your refresh token was revoked.
-Please log out and sign in again.
-```
-
-This project avoids that flow. To add a second account, use `login-as`, which
-runs Codex login in an isolated `CODEX_HOME` and saves the result as a profile.
+- Save the current Codex login as a named profile
+- Switch between saved profiles with one command
+- Add another account through an isolated `CODEX_HOME`
+- Back up the active `auth.json` before switching
+- Show non-secret profile status information
+- Designed for Windows PowerShell and VS Code Codex users
 
 ## Install
 
@@ -49,6 +67,9 @@ You can also run it without installing:
 ```powershell
 .\bin\codex-auth-profile.cmd help
 ```
+
+PowerShell Gallery support is prepared through `codexchange.ps1`, but the
+Gallery package is not required for local use.
 
 ## Recommended usage
 
@@ -100,9 +121,7 @@ Codex CLI/TUI: start a fresh session
 If the visible account name in the menu does not change before reload, that is
 expected. The file has switched; the UI has not re-read it yet.
 
-## Do not use this flow
-
-(In earlier setups, `auth.json` could still cache stale account information, which caused errors such as:"Your access token could not be refreshed because you have since logged out or signed in to another account. Please sign in again."The current version should avoid this issue as long as you do not use the old commands below.)
+## Do not use this old workflow
 
 Avoid this:
 
@@ -113,8 +132,11 @@ codex login
 codex-auth-profile.cmd save team-b
 ```
 
-The `logout` step can invalidate the current session in a saved profile. If you
-already did this and a profile stops working, refresh it:
+Older setups could leave stale account information in `auth.json`, causing the
+refresh error shown above. The current `login-as` workflow is designed to avoid
+that by keeping the new login isolated.
+
+If you already used the old workflow and a profile stops working, refresh it:
 
 ```powershell
 codex-auth-profile.cmd login-as team-a -Force
@@ -156,10 +178,14 @@ auth-profiles/
 
 This repository's `.gitignore` excludes those patterns.
 
+Use this only for accounts you own or are authorized to use. It does not bypass
+OpenAI account limits, admin policy, verification, or access controls.
+
 ## Platform
 
-The current scripts are designed for Windows PowerShell because Codex VS Code
-users on Windows commonly get Codex from:
+Codexchange is currently Windows-first. The current scripts are designed for
+Windows PowerShell because many Windows Codex users get Codex from the VS Code
+extension path:
 
 ```text
 %USERPROFILE%\.vscode\extensions\openai.chatgpt-*\bin\windows-x86_64\codex.exe
@@ -171,3 +197,6 @@ custom executable path set with:
 ```powershell
 $env:CODEX_EXE = "C:\path\to\codex.exe"
 ```
+
+Cross-platform support can be added later through a PowerShell 7 or Node.js CLI
+wrapper.
