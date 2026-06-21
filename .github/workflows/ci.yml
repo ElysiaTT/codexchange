@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate PowerShell project
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate repository layout
+        shell: pwsh
+        run: |
+          $required = @(
+            'README.md',
+            'README.zh-CN.md',
+            'LICENSE',
+            'install.ps1',
+            'bin/codex-auth-profile.cmd',
+            'scripts/codex-auth-profile.ps1'
+          )
+
+          foreach ($path in $required) {
+            if (-not (Test-Path -LiteralPath $path)) {
+              throw "Missing required file: $path"
+            }
+          }
+
+      - name: Check PowerShell syntax
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Recurse -File -Include *.ps1
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref] $tokens, [ref] $errors) | Out-Null
+
+            if ($errors.Count -gt 0) {
+              foreach ($errorRecord in $errors) {
+                Write-Error "$($file.FullName): $($errorRecord.Message)"
+              }
+              throw 'PowerShell syntax errors found.'
+            }
+          }
+
+      - name: Smoke test help command
+        shell: pwsh
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\codex-auth-profile.ps1 help
+          cmd /c .\bin\codex-auth-profile.cmd help
