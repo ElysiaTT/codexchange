@@ -1,0 +1,16 @@
+# Local Codex credentials and backups.
+auth.json
+*.auth.json
+auth-profiles/
+_backups/
+_login-homes/
+
+# Local test artifacts.
+*.log
+*.tmp
+.tmp-test/
+
+# OS/editor noise.
+.DS_Store
+Thumbs.db
+.vscode/
