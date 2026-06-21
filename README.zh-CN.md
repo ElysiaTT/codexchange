@@ -92,6 +92,8 @@ Codex CLI/TUI: 开启一个新的会话
 
 ## 不要使用这种流程
 
+（之前配置时碰到auth.json会依旧缓存旧的信息，导致报错Your access token could not be refreshed because you have since logged out or signed in to another account. Please sign in again.现在版本不用下面的旧命令应该不会遇到碰到了）
+
 请避免下面这种做法：
 
 ```powershell
