@@ -1,5 +1,7 @@
 # Codexchange
+
 🌐 Language: English | [中文](README.zh-CN.md)
+
 Tiny Windows helper for switching local Codex accounts without logging out of
 ChatGPT in your browser, and without running `codex logout` on your current
 Codex account.
