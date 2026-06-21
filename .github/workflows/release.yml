@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build package
+        shell: pwsh
+        run: |
+          $version = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}' } else { "manual-${{ github.run_number }}" }
+
+          $dist = Join-Path $PWD 'dist'
+          $pkg = Join-Path $dist "codexchange-$version"
+
+          New-Item -ItemType Directory -Force -Path $pkg | Out-Null
+
+          $items = @(
+            'README.md',
+            'README.zh-CN.md',
+            'LICENSE',
+            'install.ps1',
+            'bin',
+            'scripts',
+            'docs'
+          )
+
+          foreach ($item in $items) {
+            if (Test-Path $item) {
+              Copy-Item $item -Destination $pkg -Recurse -Force
+            }
+          }
+
+          $zip = Join-Path $dist "codexchange-$version.zip"
+          Compress-Archive -Path (Join-Path $pkg '*') -DestinationPath $zip -Force
+
+          Write-Output "Package created: $zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codexchange-package
+          path: dist/*.zip
+
+      - name: Create GitHub Release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $zip = Get-ChildItem dist -Filter "*.zip" | Select-Object -First 1
+
+          gh release create $tag $zip.FullName --generate-notes
