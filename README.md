@@ -102,6 +102,8 @@ expected. The file has switched; the UI has not re-read it yet.
 
 ## Do not use this flow
 
+(In earlier setups, `auth.json` could still cache stale account information, which caused errors such as:"Your access token could not be refreshed because you have since logged out or signed in to another account. Please sign in again."The current version should avoid this issue as long as you do not use the old commands below.)
+
 Avoid this:
 
 ```powershell
