@@ -1,4 +1,4 @@
-# Codex Auth Profile
+# Codexchange
 
 Tiny Windows helper for switching local Codex accounts without logging out of
 ChatGPT in your browser, and without running `codex logout` on your current
