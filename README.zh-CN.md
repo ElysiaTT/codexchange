@@ -1,42 +1,59 @@
-# Codexchange（COD使命召唤exchange?）
+# Codexchange（Codex 账号切换工具）
 
 [English](README.md)
 
-一个轻量的 Windows 辅助工具，用来切换本地 Codex 账号。它不会让你退出浏览器里的 ChatGPT，也不需要对当前 Codex 账号反复执行 `codex logout`（避免过多登出次数导致手机号二次验证）。
+**无需退出 ChatGPT，即可切换本地 Codex 账号。**
 
-它管理的是本地 Codex `auth.json` 配置档案：
+Codexchange 是一个轻量 Windows PowerShell 工具，用于保存、切换和恢复本地 Codex 登录状态（auth profile）。适用于需要同时使用多个 Codex / ChatGPT 账号，但不希望反复 logout / login 的场景。
+
+```powershell
+codex-auth-profile.cmd save personal
+codex-auth-profile.cmd login-as work
+codex-auth-profile.cmd use work
+```
+
+## 为什么需要它
+
+Codex CLI 和 VS Code Codex 扩展使用本地登录状态。当你在多个账号之间频繁切换时，反复 logout/login 可能会导致本地状态混乱，并出现如下错误：
+
+```text
+Your access token could not be refreshed because you have since logged out or signed in to another account.
+Please sign in again.
+```
+
+Codexchange 通过 `login-as` 避免这个问题：在隔离的 `CODEX_HOME` 中完成登录，再保存为独立 profile。
+
+它管理的文件结构如下：
 
 ```text
 %USERPROFILE%\.codex\auth.json
 %USERPROFILE%\.codex\auth-profiles\<name>.auth.json
 ```
 
-## 为什么需要这个工具
+## 功能
 
-Codex CLI 和 VS Code Codex 扩展都会使用本地认证状态。如果你有两个可用的 Codex 账号，通过反复登出再登录来切换会很麻烦。更糟的是，`codex logout` 可能会撤销当前 `auth.json` 里的 refresh token，导致之前保存的配置档案之后报错：
-
-```text
-Your access token could not be refreshed because your refresh token was revoked.
-Please log out and sign in again.
-```
-
-这个项目会避开这种流程。要添加第二个账号，请使用 `login-as`，它会在隔离的 `CODEX_HOME` 中运行 Codex 登录，然后把登录结果保存成一个配置档案。
+- 保存当前登录为 profile
+- 一键切换账号
+- 在隔离环境登录新账号
+- 自动备份 auth.json
+- 查看账号状态（不包含敏感信息）
+- Windows PowerShell / VS Code 友好
 
 ## 安装
 
-在本项目目录下运行：
+在项目目录运行：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
-打开一个新的 PowerShell 窗口，然后运行：
+然后打开新终端：
 
 ```powershell
 codex-auth-profile.cmd help
 ```
 
-你也可以不安装，直接运行：
+也可以直接运行：
 
 ```powershell
 .\bin\codex-auth-profile.cmd help
@@ -44,13 +61,13 @@ codex-auth-profile.cmd help
 
 ## 推荐用法
 
-保存当前可用的 Codex 登录状态：
+保存当前账号：
 
 ```powershell
 codex-auth-profile.cmd save team-a
 ```
 
-安全地添加另一个账号：
+添加新账号：
 
 ```powershell
 codex-auth-profile.cmd login-as team-b
@@ -63,7 +80,7 @@ codex-auth-profile.cmd use team-a
 codex-auth-profile.cmd use team-b
 ```
 
-查看已经保存的配置档案：
+查看已保存账号：
 
 ```powershell
 codex-auth-profile.cmd list
@@ -72,29 +89,19 @@ codex-auth-profile.cmd status
 
 ## 切换之后
 
-`use <profile>` 会立即替换本地 Codex 认证文件，但已经打开的 Codex 界面可能仍然把旧账号缓存到了内存里。
+`use <profile>` 会立即修改本地 auth 文件，但已打开的 Codex 界面可能仍缓存旧账号。
 
-运行下面的命令后：
-
-```powershell
-codex-auth-profile.cmd use team-b
-```
-
-请重新加载你正在使用的 Codex 界面：
+请执行：
 
 ```text
 VS Code: Ctrl+Shift+P -> Developer: Reload Window
-Codex desktop app: 完全关闭应用，然后重新打开
-Codex CLI/TUI: 开启一个新的会话
+Codex desktop: 重启应用
+CLI: 重新打开会话
 ```
 
-如果菜单里显示的账号名在重新加载前没有变化，这是正常的。文件已经切换了，只是界面还没有重新读取。
+## 避免旧流程
 
-## 不要使用这种流程
-
-（之前配置时碰到auth.json会依旧缓存旧的信息，导致报错Your access token could not be refreshed because you have since logged out or signed in to another account. Please sign in again.现在版本不用下面的旧命令应该不会遇到碰到了）
-
-请避免下面这种做法：
+不要使用旧方式：
 
 ```powershell
 codex-auth-profile.cmd save team-a
@@ -103,7 +110,9 @@ codex login
 codex-auth-profile.cmd save team-b
 ```
 
-其中的 `logout` 步骤可能会让你刚刚保存的配置档案里的 refresh token 失效。如果你已经这样做过，并且某个配置档案已经失效，请重新刷新它：
+旧流程可能导致 token 状态异常。当前推荐使用 `login-as`。
+
+如果已经出现问题：
 
 ```powershell
 codex-auth-profile.cmd login-as team-a -Force
@@ -112,19 +121,28 @@ codex-auth-profile.cmd login-as team-a -Force
 ## 命令
 
 ```text
-list                 列出已保存的配置档案
-save <name>          将当前激活的 auth.json 保存为一个配置档案
-use <name>           启用一个已保存的配置档案
-login-as <name>      在隔离的 CODEX_HOME 下登录，并保存为配置档案
-backup               备份当前激活的 auth.json
-status               显示不包含敏感信息的认证摘要和 codex 登录状态
-where                显示本工具使用的路径
-help                 显示帮助信息
+list         查看 profile
+save         保存当前登录
+use          切换 profile
+login-as     在隔离环境登录
+backup       备份 auth.json
+status       查看状态
+where        查看路径
+help         帮助
 ```
 
-## 安全
+## 发布说明
 
-保存的配置档案包含真实登录凭据。请永远不要提交或分享下面这些内容：
+通过 GitHub tag 发布版本：
+
+```powershell
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+## 安全说明
+
+请勿提交以下文件：
 
 ```text
 auth.json
@@ -132,20 +150,14 @@ auth.json
 auth-profiles/
 ```
 
-本仓库的 `.gitignore` 已经排除了这些模式。
+## 平台说明
 
-请只把这个工具用于你自己拥有或被授权使用的账号。它不会绕过 OpenAI 账号限制、管理员策略、验证流程或访问控制。
+当前仅 Windows 优先。
 
-## 平台
-
-当前脚本面向 Windows PowerShell，因为很多 Windows 上的 Codex VS Code 用户会从下面的位置获得 Codex：
+路径：
 
 ```text
 %USERPROFILE%\.vscode\extensions\openai.chatgpt-*\bin\windows-x86_64\codex.exe
 ```
 
-PowerShell 脚本也支持使用 `PATH` 中普通的 `codex` 命令，或者通过下面的环境变量指定自定义可执行文件路径：
-
-```powershell
-$env:CODEX_EXE = "C:\path\to\codex.exe"
-```
+未来可扩展跨平台支持。
