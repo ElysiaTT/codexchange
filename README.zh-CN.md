@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-一个轻量的 Windows 辅助工具，用来切换本地 Codex 账号。它不会让你退出浏览器里的 ChatGPT，也不需要对当前 Codex 账号反复执行 `codex logout`。
+一个轻量的 Windows 辅助工具，用来切换本地 Codex 账号。它不会让你退出浏览器里的 ChatGPT，也不需要对当前 Codex 账号反复执行 `codex logout`（避免过多登出次数导致手机号二次验证）。
 
 它管理的是本地 Codex `auth.json` 配置档案：
 
