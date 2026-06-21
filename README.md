@@ -1,5 +1,7 @@
 # Codexchange
 
+[![CI](https://github.com/ElysiaTT/codexchange/actions/workflows/ci.yml/badge.svg)](https://github.com/ElysiaTT/codexchange/actions/workflows/ci.yml)
+
 🌐 Language: English | [中文](README.zh-CN.md)
 
 Tiny Windows helper for switching local Codex accounts without logging out of
@@ -109,8 +111,8 @@ codex login
 codex-auth-profile.cmd save team-b
 ```
 
-The `logout` step can invalidate the refresh token inside the profile you just
-saved. If you already did this and a profile is revoked, refresh it:
+The `logout` step can invalidate the current session in a saved profile. If you
+already did this and a profile stops working, refresh it:
 
 ```powershell
 codex-auth-profile.cmd login-as team-a -Force
@@ -129,9 +131,20 @@ where                Show paths used by the tool
 help                 Show help
 ```
 
+## Releases
+
+Maintainers can publish a release by pushing a version tag:
+
+```powershell
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+GitHub Actions will build a zip package and publish a release automatically.
+
 ## Security
 
-Saved profiles contain real login credentials. Never commit or share:
+Do not commit sensitive authentication files:
 
 ```text
 auth.json
@@ -140,9 +153,6 @@ auth-profiles/
 ```
 
 This repository's `.gitignore` excludes those patterns.
-
-Use this only for accounts you own or are authorized to use. It does not bypass
-OpenAI account limits, admin policy, verification, or access controls.
 
 ## Platform
 
