@@ -8,7 +8,9 @@ param(
 
     [string]$CodexHome,
 
-    [switch]$Force
+    [switch]$Force,
+
+    [switch]$DeviceAuth
 )
 
 $ErrorActionPreference = "Stop"
@@ -30,7 +32,7 @@ Usage:
   codex-auth-profile.cmd list
   codex-auth-profile.cmd save <name> [-Force]
   codex-auth-profile.cmd use <name>
-  codex-auth-profile.cmd login-as <name> [-Force]
+  codex-auth-profile.cmd login-as <name> [-Force] [-DeviceAuth]
   codex-auth-profile.cmd status
   codex-auth-profile.cmd backup
   codex-auth-profile.cmd where
@@ -283,7 +285,11 @@ switch ($Action) {
 
         Write-Output "Starting isolated Codex login for profile '$Name'."
         Write-Output "This uses CODEX_HOME=$loginHome and does not run 'codex logout' on your main account."
-        Invoke-Codex @("login") $loginHome
+        $loginArgs = @("login")
+        if ($DeviceAuth) {
+            $loginArgs += "--device-auth"
+        }
+        Invoke-Codex $loginArgs $loginHome
 
         Assert-JsonFile $loginAuth
         Copy-Item -LiteralPath $loginAuth -Destination $target -Force
