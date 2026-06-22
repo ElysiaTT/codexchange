@@ -26,6 +26,9 @@ export PATH="$HOME/.local/bin:$PATH"
 codex-auth-profile --help
 ```
 
+For new shells, add the same `PATH` line to your shell profile, such as
+`~/.profile`, `~/.bashrc`, or `~/.zshrc`.
+
 The root installers remain as compatibility shims:
 
 ```powershell
@@ -100,19 +103,23 @@ codex-auth-profile login-as team-b --device-auth
 ## After Switching
 
 `use <profile>` changes the local Codex auth file immediately. Already-open
-Codex surfaces may keep the old account in memory.
+Codex surfaces may keep the old account in memory. Remote servers behave the
+same way: the server `auth.json` may already be switched while VS Code Remote or
+another IDE still shows the previous account until it reloads.
 
-Reload the surface you are using:
+Reload or restart the surface you are using:
 
 ```text
-VS Code: Ctrl+Shift+P -> Developer: Reload Window
-VS Code Remote: reload the client window
+VS Code local: Ctrl+Shift+P -> Developer: Reload Window
+VS Code Remote / SSH server: reload or restart the IDE client window
 Codex desktop app: close the app completely, then reopen it
 Codex CLI/TUI: start a fresh session
 ```
 
 If the visible account name does not change before reload, that is expected.
-The file has switched; the UI has not re-read it yet.
+The file has switched; the UI has not re-read it yet. Use
+`codex-auth-profile status` or compare hashes if you need to verify the active
+file before reloading the IDE.
 
 ## Do Not Use This Flow
 

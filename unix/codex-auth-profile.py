@@ -220,6 +220,7 @@ def command_status(paths: Paths, _args: argparse.Namespace) -> None:
     else:
         print(f"No auth.json found at: {paths.auth_file}")
     print()
+    sys.stdout.flush()
     run_codex(["login", "status"])
 
 

@@ -92,7 +92,12 @@ Then complete the browser login with the correct account.
 `use <profile>` replaces the local `auth.json`. Already-open Codex surfaces may
 keep the previous auth in memory until they reload.
 
-For VS Code, run:
+This is expected on remote SSH servers too. The server's
+`~/.codex/auth.json` can already match the selected profile while VS Code Remote
+or another IDE still displays the previous account.
+
+For VS Code local or VS Code Remote, run this in the client window, or restart
+the IDE:
 
 ```text
 Ctrl+Shift+P -> Developer: Reload Window
@@ -114,5 +119,7 @@ On Linux/macOS:
 sha256sum ~/.codex/auth.json ~/.codex/auth-profiles/team-b.auth.json
 ```
 
-If the hashes match, the file switch succeeded. Reload VS Code, close/reopen
-the Codex desktop app, or start a new Codex session.
+If the hashes match, the file switch succeeded. Reload or restart VS Code,
+close/reopen the Codex desktop app, or start a new Codex session. On a remote
+server, reload or restart the IDE client window; restarting only the server shell
+is not enough to refresh an already-open IDE account menu.

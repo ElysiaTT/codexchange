@@ -19,6 +19,9 @@ sh ./unix/install.sh
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
+To keep the command available in new shells, add that `PATH` line to your shell
+profile, such as `~/.profile`, `~/.bashrc`, or `~/.zshrc`.
+
 The root installer still works and delegates here:
 
 ```sh
@@ -44,12 +47,19 @@ codex-auth-profile login-as team-b --device-auth
 ## After Switching
 
 The file switches immediately, but open sessions cache auth in memory.
+This also applies on remote SSH servers: VS Code Remote or another IDE can keep
+showing the old account even after the server's `~/.codex/auth.json` has already
+changed.
 
 ```text
 Codex CLI/TUI: start a fresh session
-VS Code Remote: Developer: Reload Window on the client
+VS Code Remote / SSH server: Developer: Reload Window, or restart the IDE client
+VS Code local: Developer: Reload Window
 Codex desktop app: close the app completely, then reopen it
 ```
+
+Use `codex-auth-profile status` if you want to verify the active auth file
+before reloading or restarting the IDE.
 
 ## Custom Codex Path
 
