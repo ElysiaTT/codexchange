@@ -47,6 +47,8 @@ class Paths:
 def assert_profile_name(name: Optional[str]) -> None:
     if not name:
         raise SystemExit("Profile name is required.")
+    if name in (".", ".."):
+        raise SystemExit("Profile name cannot be '.' or '..'.")
     if not PROFILE_RE.fullmatch(name):
         raise SystemExit(
             "Profile name can only contain letters, numbers, dot, underscore, and hyphen."
@@ -115,21 +117,22 @@ def find_codex() -> str:
     if path_exe:
         return path_exe
 
-    if os.name == "nt":
-        roots = [
-            Path.home() / ".vscode" / "extensions",
-            Path.home() / ".vscode-insiders" / "extensions",
-        ]
-        candidates = []
-        for root in roots:
-            if not root.exists():
-                continue
-            for ext in root.glob("openai.chatgpt-*"):
-                exe = ext / "bin" / "windows-x86_64" / "codex.exe"
-                if exe.exists():
+    roots = [
+        Path.home() / ".vscode" / "extensions",
+        Path.home() / ".vscode-insiders" / "extensions",
+        Path.home() / ".vscode-server" / "extensions",
+        Path.home() / ".vscode-server-insiders" / "extensions",
+    ]
+    candidates = []
+    for root in roots:
+        if not root.exists():
+            continue
+        for ext in root.glob("openai.chatgpt-*"):
+            for exe in ext.glob("bin/*/codex*"):
+                if exe.is_file() and os.access(exe, os.X_OK if os.name != "nt" else os.F_OK):
                     candidates.append(exe)
-        if candidates:
-            return str(max(candidates, key=lambda p: p.stat().st_mtime))
+    if candidates:
+        return str(max(candidates, key=lambda p: p.stat().st_mtime))
 
     raise SystemExit(
         "Could not find codex. Install Codex CLI, put codex on PATH, or set CODEX_EXE."
