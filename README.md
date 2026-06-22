@@ -1,4 +1,4 @@
-# Codex Auth Profile
+# Codexchange
 
 Switch local Codex accounts without running `codex logout` on the active
 account. The tool stores named copies of Codex `auth.json` and can log in to a
