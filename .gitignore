@@ -9,6 +9,9 @@ _login-homes/
 *.log
 *.tmp
 .tmp-test/
+.tmp-cross/
+__pycache__/
+.pytest_cache/
 
 # OS/editor noise.
 .DS_Store
